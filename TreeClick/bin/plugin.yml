@@ -1,0 +1,10 @@
+# ---------------------------------------
+#          IGNORE THIS YAML FILE
+# * This file is for the developer
+# * No configuration here
+# ---------------------------------------
+name: TreeClick
+main: me.gelloe.TreeClick.Main
+version: 1.3
+author: gelloe
+api-version: 1.13
