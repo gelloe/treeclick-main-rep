@@ -3,6 +3,7 @@ package me.gelloe.TreeClick.Utils;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -14,7 +15,7 @@ import me.gelloe.TreeClick.Main;
 
 public class Util {
 	
-//	public static BlockFace[] blockFaceList = {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH, BlockFace.EAST};
+	public static BlockFace[] blockFaceList = {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH, BlockFace.EAST};
 	private static Plugin plugin = Main.getPlugin(Main.class);
 	private static FileConfiguration config = plugin.getConfig();
 	private static boolean give_item_drops_directly = config.getBoolean("give-item-drops-directly");
@@ -79,17 +80,15 @@ public class Util {
 		return null;
 	}
 	
-	public static void destroyBlock(Player p, boolean dropItems, Block b, boolean override) {
+	public static void destroyBlock(Player p, ItemStack itemStack, boolean dropItems, Block b, boolean override) {
 		boolean Creative = p.getGameMode() == GameMode.CREATIVE;
-		if (isLog(b)) {
-			DamageHandler.damage(p.getInventory().getItemInMainHand(), p, override);
-		}
+		if (isLog(b))
+			DamageHandler.damage(itemStack, p, override);
 		if (Creative) {
 			if (dropItems) {
 				if (give_item_drops_directly) {
 					for (ItemStack i : b.getDrops())
-						p.getInventory().addItem(i);
-					
+						giveItemDirectly(p, i);
 					b.setType(Material.AIR);
 					return;
 				} else {
@@ -101,8 +100,7 @@ public class Util {
 		} else {
 			if (give_item_drops_directly) {
 				for (ItemStack i : b.getDrops())
-					p.getInventory().addItem(i);
-				
+					giveItemDirectly(p, i);
 				b.setType(Material.AIR);
 				return;
 			} else {
@@ -130,5 +128,12 @@ public class Util {
 			return Material.ACACIA_SAPLING;
 
 		return null;
+	}
+	
+	public static void giveItemDirectly(Player p, ItemStack i) {
+		if (p.getInventory().firstEmpty() == -1)
+			p.getWorld().dropItem(p.getLocation(), i);
+		else
+			p.getInventory().addItem(i);
 	}
 }

@@ -28,8 +28,8 @@ public class TreeEventListener implements Listener {
 		Block b = e.getBlock();
 		if (!Util.isLog(b))
 			return;
-		Tree tree = new Tree(b, b.getType());
-		if (!tree.hasLeaves())
+		Tree tree = new Tree(b, b.getType(), p.getInventory().getItemInMainHand());
+		if (tree.leaves.isEmpty())
 			return;
 		if (tree.containsForbiddenBlocks())
 			return;
@@ -45,7 +45,7 @@ public class TreeEventListener implements Listener {
 		}
 		if (give_items_directly) {
 			e.setCancelled(true);
-			Util.destroyBlock(p, true, b, true);
+			Util.destroyBlock(p, p.getInventory().getItemInMainHand(), true, b, true);
 		}
 	}
 

@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -21,6 +21,7 @@ public class Tree {
 	private int xOrigin, zOrigin;
 	public Material logType;
 	private final Material leafType;
+	private ItemStack theAxe;
 	List<Block> stem = new ArrayList<Block>();
 	List<Block> floatingLogs = new ArrayList<Block>();
 	List<Block> leaves = new ArrayList<Block>();
@@ -34,11 +35,12 @@ public class Tree {
 	private boolean auto_plant = this.config.getBoolean("auto-replant-saplings");
 	private boolean isBeingBroken = false;
 
-	public Tree(Block b, Material logType) {
+	public Tree(Block b, Material logType, ItemStack theAxe) {
 		this.xOrigin = b.getX();
 		this.zOrigin = b.getZ();
 		this.logType = logType;
 		this.leafType = Util.getEquivalentLeaves(logType);
+		this.theAxe = theAxe;
 		iterateStem(b);
 		iterateLeaves();
 		treeBody.addAll(leaves);
@@ -199,7 +201,7 @@ public class Tree {
 			public void run() {
 				if (log_break_speed == 0) {
 					for (Block b : stem)
-						Util.destroyBlock(p, dropItems, b, false);
+						Util.destroyBlock(p, theAxe, dropItems, b, false);
 					breakLeaves(p, 0);
 					plantSapling();
 					return;
@@ -215,7 +217,7 @@ public class Tree {
 						return;
 					}
 					for (Block b : blocks)
-						Util.destroyBlock(p, dropItems, b, false);
+						Util.destroyBlock(p, theAxe, dropItems, b, false);
 					SoundUtil.breakLog(blocks.get(0));
 					breakStem(i + 1, p);
 				}
@@ -229,7 +231,7 @@ public class Tree {
 			public void run() {
 				if (leaves_break_speed == 0) {
 					for (Block b : leaves)
-						Util.destroyBlock(p, dropItems, b, false);
+						Util.destroyBlock(p, theAxe, dropItems, b, false);
 					SoundUtil.breakTree(getStemBase());
 				} else {
 					for (int i = 0; i < leaves_break_speed; i++) {
@@ -239,7 +241,7 @@ public class Tree {
 						}
 						final int blockBroken = new Random().nextInt(leaves.size());
 						SoundUtil.breakLeaves(leaves.get(blockBroken));
-						Util.destroyBlock(p, dropItems, leaves.get(blockBroken), false);
+						Util.destroyBlock(p, theAxe, dropItems, leaves.get(blockBroken), false);
 						leaves.remove(blockBroken);
 					}
 					breakLeaves(p, 1);
