@@ -1,5 +1,9 @@
 package me.gelloe.TreeClick.Utils;
 
+import java.util.HashSet;
+
+import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -7,39 +11,31 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 
-
-
 public class Util {
+
+	public static BlockFace[] blockFaceList = { BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.WEST,
+			BlockFace.SOUTH, BlockFace.EAST };
+	public static HashSet<Material> FORBIDDEN_BLOCKS = new HashSet<Material>();
+	public static String tag = ChatColor.translateAlternateColorCodes('$', "$6[$2Tree$aClick$6]$e ");
 	
-	public static BlockFace[] blockFaceList = {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH, BlockFace.EAST};
-	
-	public static Material[] getForbiddenBlocks() {
-		Material[] blocks = new Material[ConH.block_l.size()];
-		for (int i = 0; i < blocks.length; i++)
-			blocks[i] = Material.getMaterial(ConH.block_l.get(i).toUpperCase());
-		return blocks;
+	public static void print(Object o) {
+		Bukkit.getLogger().info(tag + o.toString());
 	}
 
 	public static boolean itemInHand(Player p, Material m) {
-		if (p.getInventory().getItemInMainHand().getType() == m)
-			return true;
-		return false;
+		return p.getInventory().getItemInMainHand().getType() == m;
 	}
 
 	public static boolean holdingAxe(Player p) {
-		if (itemInHand(p, Material.WOODEN_AXE) || itemInHand(p, Material.STONE_AXE)
+		return itemInHand(p, Material.WOODEN_AXE) || itemInHand(p, Material.STONE_AXE)
 				|| itemInHand(p, Material.GOLDEN_AXE) || itemInHand(p, Material.IRON_AXE)
-				|| itemInHand(p, Material.DIAMOND_AXE))
-			return true;
-		return false;
+				|| itemInHand(p, Material.DIAMOND_AXE);
 	}
 
 	public static boolean isLog(Block b) {
-		if (b.getType() == Material.BIRCH_LOG || b.getType() == Material.DARK_OAK_LOG || b.getType() == Material.OAK_LOG
+		return b.getType() == Material.BIRCH_LOG || b.getType() == Material.DARK_OAK_LOG || b.getType() == Material.OAK_LOG
 				|| b.getType() == Material.ACACIA_LOG || b.getType() == Material.SPRUCE_LOG
-				|| b.getType() == Material.JUNGLE_LOG)
-			return true;
-		return false;
+				|| b.getType() == Material.JUNGLE_LOG;
 	}
 
 	public static boolean isLeaf(Block b) {
@@ -70,32 +66,20 @@ public class Util {
 
 		return null;
 	}
-	
-	public static void destroyBlock(Player p, ItemStack itemStack, boolean dropItems, Block b, boolean override) {
-		boolean Creative = p.getGameMode() == GameMode.CREATIVE;
-		if (isLog(b))
-			DamH.damage(itemStack, p, override);
-		if (Creative) {
-			if (dropItems) {
-				if (ConH.give_i_d) {
-					for (ItemStack i : b.getDrops())
-						giveItemDirectly(p, i);
-					b.setType(Material.AIR);
-					return;
-				} else {
-					b.breakNaturally();
-				}
-			} else {
-				b.setType(Material.AIR);
-			}
+
+	public static void destroyBlock(Player playerWhoBroke, ItemStack itemInHand, boolean dropItems, Block blocktoBeBroken, boolean override) {
+		boolean Creative = playerWhoBroke.getGameMode() == GameMode.CREATIVE;
+		if (isLog(blocktoBeBroken))
+			DamH.damage(itemInHand, playerWhoBroke, override);
+		if (Creative && !dropItems) {
+			blocktoBeBroken.setType(Material.AIR);
 		} else {
 			if (ConH.give_i_d) {
-				for (ItemStack i : b.getDrops())
-					giveItemDirectly(p, i);
-				b.setType(Material.AIR);
-				return;
+				for (ItemStack i : blocktoBeBroken.getDrops())
+					giveItemDirectly(playerWhoBroke, i);
+				blocktoBeBroken.setType(Material.AIR);
 			} else {
-				b.breakNaturally();
+				blocktoBeBroken.breakNaturally();
 			}
 		}
 	}
@@ -120,7 +104,7 @@ public class Util {
 
 		return null;
 	}
-	
+
 	public static void giveItemDirectly(Player p, ItemStack i) {
 		if (p.getInventory().firstEmpty() == -1)
 			p.getWorld().dropItem(p.getLocation(), i);

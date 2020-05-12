@@ -63,7 +63,6 @@ public class Tree {
 			for (int j = -1; j <= 1; j++) {
 				for (int k = -1; k <= 1; k++) {
 					Block nextBlock = b.getWorld().getBlockAt(b.getX() + i, b.getY() + j, b.getZ() + k);
-
 					if (nextBlock.getType() != Material.AIR) {
 						if (withinBounds(nextBlock.getLocation())) {
 							if (nextBlock.getType() == leafType)
@@ -158,27 +157,18 @@ public class Tree {
 	}
 
 	public boolean containsForbiddenBlocks() {
-		for (int i = 0; i < treeBody.size(); i++) {
-			for (int j = 0; j < Util.getForbiddenBlocks().length; j++) {
-				if (treeBody.get(i).getType() == Util.getForbiddenBlocks()[j])
+		for (int i = 0; i < treeBody.size(); i++)
+				if (Util.FORBIDDEN_BLOCKS.contains(treeBody.get(i).getType()))
 					return true;
-			}
-		}
 		return false;
 	}
 
 	public boolean equalsForbiddenBlock(Block b) {
-		for (int j = 0; j < Util.getForbiddenBlocks().length; j++) {
-			if (b.getType() == Util.getForbiddenBlocks()[j])
-				return true;
-		}
-		return false;
+		return Util.FORBIDDEN_BLOCKS.contains(b.getType());
 	}
 
 	private boolean withinBounds(Location l) {
-		if (Math.abs(l.getX() - xOrigin) <= 16 && Math.abs(l.getZ() - zOrigin) < 16)
-			return true;
-		return false;
+		return Math.abs(l.getX() - xOrigin) <= 16 && Math.abs(l.getZ() - zOrigin) < 16;
 	}
 
 	public void breakSlowly(Player p) {

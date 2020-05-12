@@ -5,6 +5,7 @@
 ##############################
 # Enabled worlds and creative are self-explanatory.
 # Drop-items only handles item dropping when the player is in creative mode; in survival mode items will always drop.
+autoupdate-enabled: false
 enabled-worlds:
     - world
 creative: false
@@ -71,17 +72,28 @@ forbidden-blocks:
 # broken per tick.
 leaves-breaking:
     speed: 3
-    particle: NONE
-    sound: ENTITY_ITEM_PICKUP
-    volume: 1
-    pitch: 1
+    effect: NONE
+    particle:
+        type: NONE
+        count: 0
+        offset: 0.25
+    sound:
+        type: ENTITY_ITEM_PICKUP
+        volume: 1
+        pitch: 1
 logs-breaking:
     speed: 5
-    particle: NONE
-    sound: ENTITY_ITEM_PICKUP
-    volume: 1
-    pitch: 0.25
+    effect: NONE
+    particle:
+        type: NONE
+        count: 0
+        offset: 0.25
+    sound:
+        type: ENTITY_ITEM_PICKUP
+        volume: 1
+        pitch: 0.25
 tree-breaking:
-    sound: ENTITY_PLAYER_LEVELUP
-    volume: 1
-    pitch: 1
+    sound:
+        type: ENTITY_PLAYER_LEVELUP
+        volume: 1
+        pitch: 1

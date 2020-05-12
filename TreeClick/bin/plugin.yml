@@ -5,6 +5,11 @@
 # ---------------------------------------
 name: TreeClick
 main: me.gelloe.TreeClick.Main
-version: 1.4.0
+version: 1.5.0
 author: gelloe
 api-version: 1.13
+commands:
+    treeclick:
+        description: 
+        usage: /<command> [help]
+        aliases: [tc]

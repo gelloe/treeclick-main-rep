@@ -6,12 +6,12 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 
 import me.gelloe.TreeClick.Utils.ConH;
 import me.gelloe.TreeClick.Utils.Util;
 
-public class TreeEventListener implements Listener {
-	
+public class EventListener implements Listener {
 
 	@EventHandler
 	public void blockBreakEvent(BlockBreakEvent e) {
@@ -29,16 +29,22 @@ public class TreeEventListener implements Listener {
 		if (p.getGameMode() == GameMode.CREATIVE)
 			if (!ConH.creative)
 				return;
-		
-		for (String w : ConH.worlds) {
-			if (p.getWorld().getName().equals(w)) {
-				tree.breakSlowly(p);
-				break;
-			}
-		}
-		if (ConH.give_i_d) {
+		if (ConH.worlds.contains(p.getWorld().getName()))
+			tree.breakSlowly(p);
+		if (ConH.give_i_d){
 			e.setCancelled(true);
 			Util.destroyBlock(p, p.getInventory().getItemInMainHand(), true, b, true);
+		}
+	}
+
+	@EventHandler
+	public void playerJoinEvent(PlayerJoinEvent e) {
+		Player p = e.getPlayer();
+		if (p.isOp() && Main.update_available) {
+			p.sendMessage(Util.tag + "An update for TreeClick is available!");
+			p.sendMessage(Util.tag + "TreeClick " + Main.newestVersion + " is available for download at "
+					+ Main.latestFileLink);
+			p.sendMessage(Util.tag + "or type in '/tc update' to update");
 		}
 	}
 
