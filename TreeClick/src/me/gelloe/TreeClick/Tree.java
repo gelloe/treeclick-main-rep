@@ -7,12 +7,11 @@ import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import me.gelloe.TreeClick.Utils.ConH;
 import me.gelloe.TreeClick.Utils.SoundUtil;
 import me.gelloe.TreeClick.Utils.Util;
 
@@ -27,12 +26,6 @@ public class Tree {
 	List<Block> leaves = new ArrayList<Block>();
 	List<Block> deadLeaves = new ArrayList<Block>();
 	List<Block> treeBody = new ArrayList<Block>();
-	private Plugin plugin = Main.getPlugin(Main.class);
-	private FileConfiguration config = this.plugin.getConfig();
-	private boolean dropItems = this.config.getBoolean("drop-items");
-	private int log_break_speed = this.config.getInt("log-break-speed");
-	private int leaves_break_speed = this.config.getInt("leaves-break-speed");
-	private boolean auto_plant = this.config.getBoolean("auto-replant-saplings");
 	private boolean isBeingBroken = false;
 
 	public Tree(Block b, Material logType, ItemStack theAxe) {
@@ -166,8 +159,8 @@ public class Tree {
 
 	public boolean containsForbiddenBlocks() {
 		for (int i = 0; i < treeBody.size(); i++) {
-			for (int j = 0; j < Util.FORBIDDEN_BLOCKS.length; j++) {
-				if (treeBody.get(i).getType() == Util.FORBIDDEN_BLOCKS[j])
+			for (int j = 0; j < Util.getForbiddenBlocks().length; j++) {
+				if (treeBody.get(i).getType() == Util.getForbiddenBlocks()[j])
 					return true;
 			}
 		}
@@ -175,8 +168,8 @@ public class Tree {
 	}
 
 	public boolean equalsForbiddenBlock(Block b) {
-		for (int j = 0; j < Util.FORBIDDEN_BLOCKS.length; j++) {
-			if (b.getType() == Util.FORBIDDEN_BLOCKS[j])
+		for (int j = 0; j < Util.getForbiddenBlocks().length; j++) {
+			if (b.getType() == Util.getForbiddenBlocks()[j])
 				return true;
 		}
 		return false;
@@ -199,9 +192,9 @@ public class Tree {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				if (log_break_speed == 0) {
+				if (ConH.log_speed == 0) {
 					for (Block b : stem)
-						Util.destroyBlock(p, theAxe, dropItems, b, false);
+						Util.destroyBlock(p, theAxe, ConH.drop_i, b, false);
 					breakLeaves(p, 0);
 					plantSapling();
 					return;
@@ -217,31 +210,31 @@ public class Tree {
 						return;
 					}
 					for (Block b : blocks)
-						Util.destroyBlock(p, theAxe, dropItems, b, false);
+						Util.destroyBlock(p, theAxe, ConH.drop_i, b, false);
 					SoundUtil.breakLog(blocks.get(0));
 					breakStem(i + 1, p);
 				}
 			}
-		}.runTaskLater(Main.getPlugin(Main.class), log_break_speed);
+		}.runTaskLater(Main.getPlugin(Main.class), ConH.log_speed);
 	}
 
 	public void breakLeaves(Player p, long delay) {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				if (leaves_break_speed == 0) {
+				if (ConH.leaf_speed == 0) {
 					for (Block b : leaves)
-						Util.destroyBlock(p, theAxe, dropItems, b, false);
+						Util.destroyBlock(p, theAxe, ConH.drop_i, b, false);
 					SoundUtil.breakTree(getStemBase());
 				} else {
-					for (int i = 0; i < leaves_break_speed; i++) {
+					for (int i = 0; i < ConH.leaf_speed; i++) {
 						if (leaves.isEmpty()) {
 							SoundUtil.breakTree(getStemBase());
 							return;
 						}
 						final int blockBroken = new Random().nextInt(leaves.size());
 						SoundUtil.breakLeaves(leaves.get(blockBroken));
-						Util.destroyBlock(p, theAxe, dropItems, leaves.get(blockBroken), false);
+						Util.destroyBlock(p, theAxe, ConH.drop_i, leaves.get(blockBroken), false);
 						leaves.remove(blockBroken);
 					}
 					breakLeaves(p, 1);
@@ -251,7 +244,7 @@ public class Tree {
 	}
 
 	public void plantSapling() {
-		if (!auto_plant)
+		if (!ConH.auto)
 			return;
 		for (Block b : stem) {
 			if (b.getY() == getStemBase().getY()) {

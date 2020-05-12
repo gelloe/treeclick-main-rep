@@ -4,30 +4,21 @@ import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.plugin.Plugin;
-
-import me.gelloe.TreeClick.Main;
 
 
 
 public class Util {
 	
 	public static BlockFace[] blockFaceList = {BlockFace.UP, BlockFace.DOWN, BlockFace.NORTH, BlockFace.WEST, BlockFace.SOUTH, BlockFace.EAST};
-	private static Plugin plugin = Main.getPlugin(Main.class);
-	private static FileConfiguration config = plugin.getConfig();
-	private static boolean give_item_drops_directly = config.getBoolean("give-item-drops-directly");
 	
-	public static Material[] FORBIDDEN_BLOCKS = { Material.CHEST, Material.WALL_TORCH, Material.REDSTONE_WALL_TORCH,
-			Material.REDSTONE_TORCH, Material.OAK_SIGN, Material.BIRCH_SIGN, Material.SPRUCE_SIGN, Material.JUNGLE_SIGN,
-			Material.ACACIA_SIGN, Material.DARK_OAK_SIGN, Material.COBBLESTONE, Material.STONE_BRICKS,
-			Material.OAK_PLANKS, Material.BIRCH_PLANKS, Material.SPRUCE_PLANKS, Material.JUNGLE_PLANKS,
-			Material.ACACIA_PLANKS, Material.DARK_OAK_PLANKS, Material.DARK_OAK_WALL_SIGN, Material.OAK_WALL_SIGN,
-			Material.BIRCH_WALL_SIGN, Material.SPRUCE_WALL_SIGN, Material.JUNGLE_WALL_SIGN, Material.ACACIA_WALL_SIGN,
-			Material.GLOWSTONE, Material.REDSTONE_LAMP, Material.DAYLIGHT_DETECTOR, Material.LADDER, Material.FURNACE,
-			Material.BLAST_FURNACE};
+	public static Material[] getForbiddenBlocks() {
+		Material[] blocks = new Material[ConH.block_l.size()];
+		for (int i = 0; i < blocks.length; i++)
+			blocks[i] = Material.getMaterial(ConH.block_l.get(i).toUpperCase());
+		return blocks;
+	}
 
 	public static boolean itemInHand(Player p, Material m) {
 		if (p.getInventory().getItemInMainHand().getType() == m)
@@ -83,10 +74,10 @@ public class Util {
 	public static void destroyBlock(Player p, ItemStack itemStack, boolean dropItems, Block b, boolean override) {
 		boolean Creative = p.getGameMode() == GameMode.CREATIVE;
 		if (isLog(b))
-			DamageHandler.damage(itemStack, p, override);
+			DamH.damage(itemStack, p, override);
 		if (Creative) {
 			if (dropItems) {
-				if (give_item_drops_directly) {
+				if (ConH.give_i_d) {
 					for (ItemStack i : b.getDrops())
 						giveItemDirectly(p, i);
 					b.setType(Material.AIR);
@@ -98,7 +89,7 @@ public class Util {
 				b.setType(Material.AIR);
 			}
 		} else {
-			if (give_item_drops_directly) {
+			if (ConH.give_i_d) {
 				for (ItemStack i : b.getDrops())
 					giveItemDirectly(p, i);
 				b.setType(Material.AIR);

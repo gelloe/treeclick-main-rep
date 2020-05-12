@@ -12,6 +12,48 @@ drop-items: true
 auto-replant-saplings: true
 damage-axe-accordingly: true
 give-item-drops-directly: false
+
+##############################
+#@--------------------------@#
+#|     FORBIDDEN BLOCKS     |#
+#@--------------------------@#
+##############################
+#  This is a list of blocks that the plugin will check for to
+#  make sure that only naturally generated trees are being broken,
+#  and not player created structures.
+#  If these blocks are placed adjacent to a tree's trunk or leaves,
+#  the plugin will not cut it down.
+forbidden-blocks:
+    - CHEST
+    - WALL_TORCH
+    - REDSTONE_WALL_TORCH
+    - REDSTONE_TORCH
+    - OAK_SIGN
+    - BIRCH_SIGN
+    - SPRUCE_SIGN
+    - JUNGLE_SIGN
+    - ACACIA_SIGN
+    - DARK_OAK_SIGN
+    - COBBLESTONE
+    - STONE_BRICKS
+    - OAK_PLANKS
+    - BIRCH_PLANKS
+    - SPRUCE_PLANKS
+    - JUNGLE_PLANKS
+    - ACACIA_PLANKS
+    - DARK_OAK_PLANKS
+    - DARK_OAK_WALL_SIGN
+    - OAK_WALL_SIGN
+    - BIRCH_WALL_SIGN
+    - SPRUCE_WALL_SIGN
+    - JUNGLE_WALL_SIGN
+    - ACACIA_WALL_SIGN
+    - GLOWSTONE
+    - REDSTONE_LAMP
+    - DAYLIGHT_DETECTOR
+    - LADDER
+    - FURNACE
+    - BLAST_FURNACE
 ##############################
 #@--------------------------@#
 #|SPEED , SOUNDS & PARTICLES|#
@@ -27,14 +69,14 @@ give-item-drops-directly: false
 # 
 # leaves-break-speed is measured in how many leaves are
 # broken per tick.
-log-break-speed: 5
-leaves-break-speed: 3
 leaves-breaking:
+    speed: 3
     particle: NONE
     sound: ENTITY_ITEM_PICKUP
     volume: 1
     pitch: 1
 logs-breaking:
+    speed: 5
     particle: NONE
     sound: ENTITY_ITEM_PICKUP
     volume: 1
