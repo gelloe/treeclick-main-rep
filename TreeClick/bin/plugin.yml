@@ -11,5 +11,6 @@ api-version: 1.13
 commands:
     treeclick:
         description: 
-        usage: /<command> [help]
+        usage: /<command> [update | help]
         aliases: [tc]
+        permission: treeclick

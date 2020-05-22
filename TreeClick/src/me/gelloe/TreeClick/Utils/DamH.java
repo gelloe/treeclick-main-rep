@@ -11,16 +11,15 @@ import org.bukkit.inventory.meta.Damageable;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class DamH {
+	
+	public static Random r = new Random();
 
 	public static boolean isBroken(ItemStack i) {
 		return ((Damageable) i.getItemMeta()).getDamage() >= i.getType().getMaxDurability();
 	}
 
-	public static void damage(ItemStack i, Player p, boolean override) {
-		if (!ConH.axe)
-			if (!override)
-				return;
-		if (p.getGameMode() == GameMode.CREATIVE)
+	public static void damage(ItemStack i, Player p) {
+		if (p.getGameMode() == GameMode.CREATIVE || !ConH.axe)
 			return;
 		if (i.containsEnchantment(Enchantment.DURABILITY)) {
 			damageUnbreaking(i, p);
@@ -35,7 +34,7 @@ public class DamH {
 
 	private static void damageUnbreaking(ItemStack i, Player p) {
 		double unbreaking = 100 / (1 + i.getEnchantmentLevel(Enchantment.DURABILITY));
-		double chance = new Random().nextDouble() * 100;
+		double chance = r.nextDouble() * 100;
 		Damageable d = (Damageable) i.getItemMeta();
 		if (unbreaking > chance)
 			d.setDamage(d.getDamage() + 1);

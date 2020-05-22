@@ -1,29 +1,48 @@
-##############################
-#@--------------------------@#
-#|    BASIC CONFIGURATION   |#
-#@--------------------------@#
-##############################
-# Enabled worlds and creative are self-explanatory.
-# Drop-items only handles item dropping when the player is in creative mode; in survival mode items will always drop.
+#   
+#     _______                 _____  _  _        _    
+#    |__   __|               / ____|| |(_)      | |   
+#       | | _ __  ___   ___ | |     | | _   ___ | | __
+#       | || '__|/ _ \ / _ \| |     | || | / __|| |/ /
+#       | || |  |  __/|  __/| |____ | || || (__ |   < 
+#       |_||_|   \___| \___| \_____||_||_| \___||_|\_\  v1.5.0
+#
+
+#
+#       Basic Configuration
+#
+#   I tried to keep this config file simple, easy-to-read and to the point,
+#   so please take your time to read the whole thing through.
+#
+#
+#   Autoupdate-Enabled will automatically download and install the latest version of TreeClick, if available.
+#
+#   Enabled-Worlds is a list of all server world files that TreeClick will work on.
+#   
+#   Creative will enable users to use TreeClick while they are in creative mode.
+#
+#   Auto-Replant-Saplings will take saplings from a player's inventory and replant them where the felled tree once stood.
+#
+#   Damage-Axe-Accordingly will damage the player's axe once per log, as opposed to once per tree.
+#
+#   Give-Item-Drops-Directly will spawn the trees drops in the player's inventory automatically, as opposed to dropping them on the ground
+#
 autoupdate-enabled: false
 enabled-worlds:
     - world
 creative: false
-drop-items: true
 auto-replant-saplings: true
 damage-axe-accordingly: true
 give-item-drops-directly: false
-
-##############################
-#@--------------------------@#
-#|     FORBIDDEN BLOCKS     |#
-#@--------------------------@#
-##############################
-#  This is a list of blocks that the plugin will check for to
-#  make sure that only naturally generated trees are being broken,
-#  and not player created structures.
-#  If these blocks are placed adjacent to a tree's trunk or leaves,
-#  the plugin will not cut it down.
+#
+#       Forbidden Block Configuration
+#
+#  If the plugin finds any of these blocks adjacent to the Tree the player is attempting to cut,
+#   The plugin will override and prevent the tree from being broken.
+#   This is to differentiate naturally generated trees from player built structures.
+#
+#   List of block names - https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Material.html
+#       (Must be a block of course, if you add an item that isn't placeable you'll just make the plugin a tiny bit slower)
+#
 forbidden-blocks:
     - CHEST
     - WALL_TORCH
@@ -55,23 +74,33 @@ forbidden-blocks:
     - LADDER
     - FURNACE
     - BLAST_FURNACE
-##############################
-#@--------------------------@#
-#|SPEED , SOUNDS & PARTICLES|#
-#@--------------------------@#
-##############################
-# Try changing these settings if you're running on a small server.
-# Log-break-speed is how many ticks it will take until
-# the next set of logs will be broken. Set to 0 if you
-# want the entire tree to break instantly.
 #
-# log-break-speed is measured in how many ticks between
-# each log being broken
-# 
-# leaves-break-speed is measured in how many leaves are
-# broken per tick.
+#       Tree settings Configuration
+#
+#   Some of these settings can be tweaked to improve performance if you're running
+#   a small server. Others can be changed just to customize the plugin.
+#
+#   Log-break.speed and Leaves-breaking.speed are independent of each other -
+#   One can be set to 0 and the other can be set to break slowly.
+#
 leaves-breaking:
-    speed: 3
+    max-range: 6
+#       Max range is the farthest distance the iterator will check for connected leaves.
+#   If it bothers you that some leaves are still floating after a large tree is cut down,
+#   feel free to set it to 7 or higher.
+#
+#       Beware that higher values *may* lag your server more, and will very likely
+#   interfere with other trees nearby.
+#
+#   A list of particles, effects and sounds for the plugin can be found here:
+#       - Particles - https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Particle.html
+#       - Sounds - https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Sound.html
+#       - Effects - https://hub.spigotmc.org/javadocs/spigot/org/bukkit/Effect.html
+#
+    speed: 3 
+#
+#   leaves-breaking.speed is measured in (approximately how many) leaves broken per tick
+#
     effect: NONE
     particle:
         type: NONE
@@ -83,6 +112,9 @@ leaves-breaking:
         pitch: 1
 logs-breaking:
     speed: 5
+#
+#   logs-breaking.speed is measured in ticks between each log breaking
+#
     effect: NONE
     particle:
         type: NONE
@@ -97,3 +129,54 @@ tree-breaking:
         type: ENTITY_PLAYER_LEVELUP
         volume: 1
         pitch: 1
+
+#
+#
+#       Custom Tree types and Tools
+#
+#   To add a NEW or CUSTOM type of tree, add information about it using the following syntax:
+#
+#   NAME_OF_LOG:
+#       leaves: NAME_OF_LEAF
+#       sapling: NAME_OF_SAPLING
+#
+#   Note that every tree must have a unique log type.
+#   If there are two trees with the same log type, the plugin
+#   will take the first tree from the list and the other will be ignored.
+#
+species:
+    OAK_LOG:
+        leaves: OAK_LEAVES
+        sapling: OAK_SAPLING
+    BIRCH_LOG:
+        leaves: BIRCH_LEAVES
+        sapling: BIRCH_SAPLING
+    DARK_OAK_LOG:
+        leaves: DARK_OAK_LEAVES
+        sapling: DARK_OAK_SAPLING
+    SPRUCE_LOG:
+        leaves: SPRUCE_LEAVES
+        sapling: SPRUCE_SAPLING
+    JUNGLE_LOG:
+        leaves: JUNGLE_LEAVES
+        sapling: JUNGLE_SAPLING
+    ACACIA_LOG:
+        leaves: ACACIA_LEAVES
+        sapling: ACACIA_SAPLING
+#
+#   To add a new tool, simply add its name to the list here
+#
+tools:
+    - WOODEN_AXE
+    - STONE_AXE
+    - IRON_AXE
+    - GOLDEN_AXE
+    - DIAMOND_AXE
+#       Footnote
+#   If you like the plugin, please consider following, favoriting and commenting on the original Bukkit/Spigot forum post
+#   It helps my work get attention and makes me want to make more plugins :)
+#   Links:
+#       - https://dev.bukkit.org/projects/treeclick
+#       - https://www.spigotmc.org/resources/treeclick.73338/
+#   Contact:
+#       Email: mcgelloe@gmail.com

@@ -1,6 +1,5 @@
 package me.gelloe.TreeClick;
 
-import org.bukkit.GameMode;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,33 +15,33 @@ public class EventListener implements Listener {
 	@EventHandler
 	public void blockBreakEvent(BlockBreakEvent e) {
 		Player p = e.getPlayer();
+		
 		if (!Util.holdingAxe(p))
 			return;
+		
 		Block b = e.getBlock();
+		
 		if (!Util.isLog(b))
 			return;
-		Tree tree = new Tree(b, b.getType(), p.getInventory().getItemInMainHand());
-		if (tree.leaves.isEmpty())
+		
+		if (!ConH.worlds.contains(b.getWorld().getName()))
 			return;
-		if (tree.containsForbiddenBlocks())
-			return;
-		if (p.getGameMode() == GameMode.CREATIVE)
-			if (!ConH.creative)
-				return;
-		if (ConH.worlds.contains(p.getWorld().getName()))
-			tree.breakSlowly(p);
-		if (ConH.give_i_d){
-			e.setCancelled(true);
-			Util.destroyBlock(p, p.getInventory().getItemInMainHand(), true, b, true);
+		
+		Tree tree = new Tree(b, p);
+		tree.timber();
+		
+		if (ConH.give_i_d && tree.isCuttable()){
+			b.getDrops().forEach(i -> p.getInventory().addItem(i));
+			e.setDropItems(false);
 		}
 	}
 
 	@EventHandler
 	public void playerJoinEvent(PlayerJoinEvent e) {
 		Player p = e.getPlayer();
-		if (p.isOp() && Main.update_available) {
+		if (p.hasPermission("treeclick") && Main.update_available) {
 			p.sendMessage(Util.tag + "An update for TreeClick is available!");
-			p.sendMessage(Util.tag + "TreeClick " + Main.newestVersion + " is available for download at "
+			p.sendMessage(Main.newestVersion + " is available for download at "
 					+ Main.latestFileLink);
 			p.sendMessage(Util.tag + "or type in '/tc update' to update");
 		}

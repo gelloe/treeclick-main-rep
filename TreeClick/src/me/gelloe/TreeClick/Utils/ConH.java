@@ -2,27 +2,29 @@ package me.gelloe.TreeClick.Utils;
 
 import java.io.File;
 import java.util.HashSet;
-import java.util.List;
 
 import org.bukkit.Material;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import me.gelloe.TreeClick.Main;
-import net.md_5.bungee.api.ChatColor;
 
 public class ConH {
 
-	static FileConfiguration config;
-	public static HashSet<String> worlds;
+	private static FileConfiguration config;
+	private static ConfigurationSection trees;
+	
+
+	public static HashSet<String> worlds = new HashSet<String>();
 	public static boolean auto_update;
 	public static boolean creative;
 	public static boolean give_i_d;
-	public static boolean drop_i;
 	public static int log_speed;
 	public static int leaf_speed;
+	public static int leaf_r;
 	public static boolean auto;
-	public static List<String> block_l;
+	public static boolean axe;
 
 	public static String leaf_e;
 	public static String leaf_p;
@@ -44,32 +46,28 @@ public class ConH {
 	public static float tree_s_v;
 	public static float tree_s_p;
 
-	public static boolean axe;
-
 	public static void setUp() {
 
 		File dataFolder = Main.getPlugin(Main.class).getDataFolder();
 		if (!dataFolder.exists()) {
 			dataFolder.mkdir();
-			Util.print(ChatColor.YELLOW + "Creating plugin folder");
-		}
-		File autYAML = new File(dataFolder, "/config.yml");
-		if (!autYAML.exists()) {
-			Main.getPlugin(Main.class).saveDefaultConfig();
-			Util.print(ChatColor.YELLOW + "Generating configuration");
+			Util.print("Creating plugin folder");
 		}
 
-		config = YamlConfiguration.loadConfiguration(autYAML);
+		File conYAML = new File(dataFolder, "/config.yml");
+		if (!conYAML.exists()) {
+			Main.getPlugin(Main.class).saveDefaultConfig();
+			Util.print("Generating configuration");
+		}
+		config = YamlConfiguration.loadConfiguration(conYAML);
 
 		auto_update = config.getBoolean("autoupdate-enabled");
-		config.getStringList("enabled-worlds").forEach((s) -> worlds.add(s));
+		config.getStringList("enabled-worlds").forEach(worlds::add);
 		creative = config.getBoolean("creative");
 		give_i_d = config.getBoolean("give-item-drops-directly");
-		drop_i = config.getBoolean("drop-items");
 		auto = config.getBoolean("auto-replant-saplings");
-		block_l = config.getStringList("forbidden-blocks");
-
 		leaf_speed = config.getInt("leaves-breaking.speed");
+		leaf_r = config.getInt("leaves-breaking.max-range");
 		leaf_e = config.getString("leaves-breaking.effect").toUpperCase();
 		leaf_p = config.getString("leaves-breaking.particle.type").toUpperCase();
 		leaf_p_c = config.getInt("leaves-breaking.particle.count");
@@ -91,10 +89,17 @@ public class ConH {
 		tree_s_v = config.getLong("tree-breaking.sound.volume");
 		tree_s_p = config.getLong("tree-breaking.sound.pitch");
 		axe = config.getBoolean("damage-axe-accordingly");
-		Util.print("Adding " + block_l.size() + " blocks to the registry...");
-		for (String s : block_l)
+		trees = config.getConfigurationSection("species");
+		Util.print("Registering " + config.getStringList("forbidden-blocks").size() + " safety blocks...");
+		for (String s : config.getStringList("forbidden-blocks"))
 			Util.FORBIDDEN_BLOCKS.add(Material.getMaterial(s.toUpperCase()));
-
+		Util.print("Registering " + trees.getKeys(false).size() + " tree species...");
+		trees.getKeys(false).forEach(s -> {
+			Util.log_leaf.put(Material.getMaterial(s), Material.getMaterial(trees.get(s + ".leaves").toString()));
+			Util.log_sapling.put(Material.getMaterial(s), Material.getMaterial(trees.get(s + ".sapling").toString()));
+		});
+		Util.print("Registering " + config.getStringList("tools").size() + " different tools...");
+		for (String s : config.getStringList("tools"))
+			Util.AXES.add(Material.getMaterial(s.toUpperCase()));
 	}
-
 }

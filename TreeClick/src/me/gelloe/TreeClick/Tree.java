@@ -1,12 +1,14 @@
 package me.gelloe.TreeClick;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Random;
 
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -17,231 +19,176 @@ import me.gelloe.TreeClick.Utils.Util;
 
 public class Tree {
 
-	private int xOrigin, zOrigin;
-	public Material logType;
-	private final Material leafType;
-	private ItemStack theAxe;
-	List<Block> stem = new ArrayList<Block>();
-	List<Block> floatingLogs = new ArrayList<Block>();
-	List<Block> leaves = new ArrayList<Block>();
-	List<Block> deadLeaves = new ArrayList<Block>();
-	List<Block> treeBody = new ArrayList<Block>();
-	private boolean isBeingBroken = false;
+	private Player p;
+	private ItemStack playerAxe;
 
-	public Tree(Block b, Material logType, ItemStack theAxe) {
-		this.xOrigin = b.getX();
-		this.zOrigin = b.getZ();
-		this.logType = logType;
-		this.leafType = Util.getEquivalentLeaves(logType);
-		this.theAxe = theAxe;
-		iterateStem(b);
-		iterateLeaves();
+	private Material logtype;
+
+	private HashSet<Block> treeBody = new HashSet<Block>();
+	private HashSet<Block> leaves = new HashSet<Block>();
+	private HashSet<Block> stem = new HashSet<Block>();
+	private HashSet<Block> remaining = new HashSet<Block>();
+
+	private HashSet<Location> base = new HashSet<Location>();
+
+	public Tree(Block origin, Player p) {
+		this.logtype = origin.getType();
+		this.p = p;
+		this.playerAxe = p.getInventory().getItemInMainHand();
+		stem.add(origin);
+		locateStem(origin);
+		locateBase();
+		locateLeaves();
 		treeBody.addAll(leaves);
 		treeBody.addAll(stem);
-		treeBody.addAll(floatingLogs);
+		locateAdjacent();
+		treeBody.addAll(remaining);
 	}
 
-	public void iterateLeaves(Block b) {
-		if (leaves.contains(b))
-			return;
-		if (deadLeaves.contains(b))
-			return;
-		if (b.getType() == leafType) {
-			boolean doesPass = false;
-			for (int i = 0; i < stem.size(); i++) {
-				if (b.getLocation().distance(stem.get(i).getLocation()) <= 5)
-					doesPass = true;
-			}
-			if (doesPass)
-				leaves.add(b);
-			else
-				deadLeaves.add(b);
-		}
-		
-		
-		for (int i = -1; i <= 1; i++) {
-			for (int j = -1; j <= 1; j++) {
-				for (int k = -1; k <= 1; k++) {
-					Block nextBlock = b.getWorld().getBlockAt(b.getX() + i, b.getY() + j, b.getZ() + k);
-					if (nextBlock.getType() != Material.AIR) {
-						if (withinBounds(nextBlock.getLocation())) {
-							if (nextBlock.getType() == leafType)
-								iterateLeaves(nextBlock);
-							else if (nextBlock.getType() == logType) {
-								if (!(floatingLogs.contains(nextBlock) || stem.contains(nextBlock)))
-									iterateFloatingLog(nextBlock);
-							} else if (equalsForbiddenBlock(nextBlock) && !treeBody.contains(nextBlock))
-								treeBody.add(nextBlock);
-						}
+	private void locateStem(Block startingPoint) {
+		for (int dx = -1; dx <= 1; dx++) {
+			for (int dy = -1; dy <= 1; dy++) {
+				for (int dz = -1; dz <= 1; dz++) {
+					Block nextBlock = startingPoint.getLocation().add(dx, dy, dz).getBlock();
+					if (nextBlock.getType().equals(logtype) && !stem.contains(nextBlock)) {
+						stem.add(nextBlock);
+						locateStem(nextBlock);
 					}
 				}
 			}
 		}
 	}
 
-	public void iterateFloatingLog(Block b) {
-		for (int i = -1; i <= 1; i++) {
-			for (int j = 0; j <= 1; j++) {
-				for (int k = -1; k <= 1; k++) {
-					if (i == 0 && j == 0 && k == 0)
-						continue;
-					Block nextBlock = b.getWorld().getBlockAt(b.getX() + i, b.getY() + j, b.getZ() + k);
-					if (stem.contains(nextBlock) || floatingLogs.contains(nextBlock))
-						continue;
-					if (nextBlock.getType() == logType) {
-						floatingLogs.add(nextBlock);
-						iterateFloatingLog(nextBlock);
-					}
-				}
-			}
-		}
-	}
-
-	public Block getStemBase() {
-		if (stem.isEmpty())
-			return null;
-		else {
-			Block b0 = stem.get(0);
-			for (Block b1 : stem) {
-				if (b1.getY() < b0.getY())
-					b0 = b1;
-			}
-			return b0;
-		}
-	}
-
-	public int getLayerCount() {
-		Block highestBlock = stem.get(0);
-		Block lowestBlock = stem.get(stem.size() - 1);
+	private void locateBase() {
+		int lowestY = 255;
 		for (Block b : stem) {
-			if (b.getY() < lowestBlock.getY())
-				lowestBlock = b;
-			else if (b.getY() > highestBlock.getY())
-				highestBlock = b;
+			if (b.getY() < lowestY)
+				lowestY = b.getY();
 		}
-		return highestBlock.getY() - lowestBlock.getY() + 1;
+		for (Block b : stem)
+			if (b.getY() == lowestY)
+				base.add(b.getLocation());
 	}
 
-	public void iterateLeaves() {
-		for (int i = 0; i < stem.size(); i++)
-			iterateLeaves(stem.get(i));
-	}
-
-	public void iterateStem(Block b) {
-		if (stem.contains(b))
-			return;
-		stem.add(b);
-
-		for (int i = -1; i <= 1; i++) {
-			for (int j = -1; j <= 1; j++) {
-				for (int k = -1; k <= 1; k++) {
-					Location loc = b.getLocation();
-					loc.add(i, j, k);
-					Block nextBlock = loc.getBlock();
-					if (nextBlock.getType() == logType)
-						iterateStem(nextBlock);
-					else if (equalsForbiddenBlock(nextBlock) && !treeBody.contains(nextBlock))
-						treeBody.add(nextBlock);
+	private void locateLeaves() {
+		HashMap<Block, Integer> blockL = new HashMap<Block, Integer>();
+		stem.forEach(b -> blockL.put(b, 0));
+		for (int i = 1; i < ConH.leaf_r; i++) {
+			HashMap<Block, Integer> nextBlockL = new HashMap<Block, Integer>();
+			for (Block b : blockL.keySet()) {
+				for (BlockFace bf : Util.allFaces) {
+					Block nextBlock = b.getRelative(bf);
+					if (!blockL.containsKey(nextBlock)
+							&& nextBlock.getType().equals(Util.getEquivalentLeaves(logtype))) {
+						nextBlockL.put(nextBlock, i);
+					}
 				}
 			}
+			blockL.putAll(nextBlockL);
 		}
+		blockL.keySet().forEach(b -> {
+			if (b.getType().equals(Util.getEquivalentLeaves(logtype)))
+				leaves.add(b);
+		});
 	}
 
-	public boolean hasLeaves() {
-		for (int i = 0; i < treeBody.size(); i++) {
-			if (Util.isLeaf(treeBody.get(i))) {
-				return true;
+	private void locateAdjacent() {
+		for (Block b : treeBody) {
+			for (BlockFace bf : Util.someFaces) {
+				Block nextBlock = b.getRelative(bf);
+				if (!leaves.contains(nextBlock) && !stem.contains(nextBlock)
+						&& Util.FORBIDDEN_BLOCKS.contains(nextBlock.getType()))
+					remaining.add(nextBlock);
 			}
 		}
-		return false;
 	}
 
-	public boolean containsForbiddenBlocks() {
-		for (int i = 0; i < treeBody.size(); i++)
-				if (Util.FORBIDDEN_BLOCKS.contains(treeBody.get(i).getType()))
-					return true;
-		return false;
+	public boolean isCuttable() {
+		if (leaves.isEmpty())
+			return false;
+		if (!remaining.isEmpty())
+			return false;
+		if (p.getGameMode() == GameMode.CREATIVE && !ConH.creative)
+			return false;
+		return true;
 	}
 
-	public boolean equalsForbiddenBlock(Block b) {
-		return Util.FORBIDDEN_BLOCKS.contains(b.getType());
-	}
-
-	private boolean withinBounds(Location l) {
-		return Math.abs(l.getX() - xOrigin) <= 16 && Math.abs(l.getZ() - zOrigin) < 16;
-	}
-
-	public void breakSlowly(Player p) {
-		if (isBeingBroken)
+	public void timber() {
+		if (!isCuttable())
 			return;
-		isBeingBroken = true;
-		breakStem(getStemBase().getY(), p);
+		if (ConH.log_speed > 0) {
+			int lowestY = 256;
+			int highestY = 0;
+			for (Block b : stem) {
+				if (b.getY() < lowestY)
+					lowestY = b.getY();
+				if (b.getY() > highestY)
+					highestY = b.getY();
+			}
+			cutLayer(0, lowestY, highestY);
+		} else {
+			stem.forEach(b -> Util.destroyBlock(p, playerAxe, b));
+			cutLeaves();
+		}
 	}
 
-	public void breakStem(int i, Player p) {
+	private void cutLayer(int layer, int lowestY, int highestY) {
 		new BukkitRunnable() {
 			@Override
 			public void run() {
-				if (ConH.log_speed == 0) {
-					for (Block b : stem)
-						Util.destroyBlock(p, theAxe, ConH.drop_i, b, false);
-					breakLeaves(p, 0);
-					plantSapling();
-					return;
-				} else {
-					ArrayList<Block> blocks = new ArrayList<Block>();
-					for (Block b : stem) {
-						if (b.getY() == i)
-							blocks.add(b);
+				for (Block b : stem) {
+					if (b.getY() == lowestY + layer && playerAxe != null) {
+						Util.destroyBlock(p, playerAxe, b);
 					}
-					if (blocks.isEmpty()) {
-						breakLeaves(p, 0);
-						plantSapling();
-						return;
-					}
-					for (Block b : blocks)
-						Util.destroyBlock(p, theAxe, ConH.drop_i, b, false);
-					SoundUtil.breakLog(blocks.get(0));
-					breakStem(i + 1, p);
 				}
+				if (layer + lowestY < highestY) {
+					cutLayer(layer + 1, lowestY, highestY);
+				} else
+					cutLeaves();
 			}
 		}.runTaskLater(Main.getPlugin(Main.class), ConH.log_speed);
 	}
 
-	public void breakLeaves(Player p, long delay) {
-		new BukkitRunnable() {
-			@Override
-			public void run() {
-				if (ConH.leaf_speed == 0) {
-					for (Block b : leaves)
-						Util.destroyBlock(p, theAxe, ConH.drop_i, b, false);
-					SoundUtil.breakTree(getStemBase());
-				} else {
-					for (int i = 0; i < ConH.leaf_speed; i++) {
-						if (leaves.isEmpty()) {
-							SoundUtil.breakTree(getStemBase());
-							return;
-						}
-						final int blockBroken = new Random().nextInt(leaves.size());
-						SoundUtil.breakLeaves(leaves.get(blockBroken));
-						Util.destroyBlock(p, theAxe, ConH.drop_i, leaves.get(blockBroken), false);
-						leaves.remove(blockBroken);
+	private void cutLeaves() {
+		if (ConH.leaf_speed > 0) {
+			Random r = new Random();
+			for (Block b : leaves) {
+				new BukkitRunnable() {
+					@Override
+					public void run() {
+						Util.destroyBlock(p, playerAxe, b);
 					}
-					breakLeaves(p, 1);
-				}
+				}.runTaskLater(Main.getPlugin(Main.class), r.nextInt(leaves.size() / ConH.leaf_speed));
 			}
-		}.runTaskLater(Main.getPlugin(Main.class), delay);
+			new BukkitRunnable() {
+				@Override
+				public void run() {
+					plantSaplings();
+				}
+			}.runTaskLater(Main.getPlugin(Main.class), leaves.size() / ConH.leaf_speed);
+
+		} else {
+			leaves.forEach(b -> Util.destroyBlock(p, playerAxe, b));
+			plantSaplings();
+		}
 	}
 
-	public void plantSapling() {
+	private void plantSaplings() {
+		for (Location l : base) {
+			SoundUtil.breakTree(l.getBlock());
+			break;
+		}
 		if (!ConH.auto)
 			return;
-		for (Block b : stem) {
-			if (b.getY() == getStemBase().getY()) {
-				Material blockUnder = b.getWorld().getBlockAt(b.getX(), b.getY() - 1, b.getZ()).getType();
-				if (blockUnder == Material.DIRT || blockUnder == Material.GRASS_BLOCK || blockUnder == Material.PODZOL)
-					b.setType(Util.getEquivalentSapling(logType));
+		Material sapling = Util.getEquivalentSapling(logtype);
+		for (Location l : base) {
+			if (p.getInventory().contains(sapling)) {
+				if (Util.isPlantableBlock(l.getBlock().getRelative(BlockFace.DOWN))) {
+					l.getBlock().setType(sapling);
+					p.getInventory().removeItem(new ItemStack(sapling, 1));
+				}
 			}
 		}
 	}
+
 }

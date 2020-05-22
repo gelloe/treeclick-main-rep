@@ -13,6 +13,7 @@ import net.gravitydevelopment.updater.Updater.UpdateType;
 
 public class Main extends JavaPlugin {
 	
+	
 	public static boolean update_available = false;
 	public static String newestVersion;
 	public static String latestFileLink;
@@ -28,14 +29,13 @@ public class Main extends JavaPlugin {
 			Updater update = new Updater(this, 348361, this.getFile(), UpdateType.NO_DOWNLOAD, false);
 			update_available = update.getResult() == UpdateResult.UPDATE_AVAILABLE;
 			if (update_available) {
-				newestVersion = update.getLatestGameVersion();
+				newestVersion = update.getLatestName();
 				latestFileLink = update.getLatestFileLink();
 				Util.print("An update for TreeClick is available!");
-				Util.print("TreeClick " + newestVersion + " is available for download at " + latestFileLink);
+				Util.print(newestVersion + " is available for download at " + latestFileLink);
 				Util.print("or type in '/tc update' to update");
 			}
 		}
-		
 	}
 	
 	public void performUpdate() {
